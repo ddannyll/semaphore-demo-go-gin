@@ -8,15 +8,25 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func render (c *gin.Context, data gin.H, templateName string) {
+	switch c.Request.Header.Get("Accept") {
+	case "application/json": 
+		c.JSON(http.StatusOK, data["payload"])
+	case "application/xml":
+		c.XML(http.StatusOK, data["payload"])
+	default:
+		c.HTML(http.StatusOK, templateName, data)
+	}
+}
+
 func showIndexPage(c *gin.Context) {
 	articles := getAllArticles()
-	c.HTML(
-		http.StatusOK,
-		"index.html",
+	render(c, 
 		gin.H{
-			"title":   "Home Page",
+			"title": "Home Page",
 			"payload": articles,
 		},
+		"index.html",
 	)
 }
 
@@ -32,12 +42,11 @@ func getArticle(c *gin.Context) {
 	}
 
 	// valid
-	c.HTML(
-		http.StatusOK,
-		"article.html",
+	render(c, 
 		gin.H{
 			"title":   fmt.Sprintf("article-%v", articleId),
 			"payload": article,
 		},
+		"article.html",
 	)
 }
